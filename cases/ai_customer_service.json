@@ -1,0 +1,57 @@
+{
+  "case_id": "ai_cs_001",
+  "title": "AI客服是否全面扩大上线",
+  "domain": "产品管理决策",
+  "difficulty": "中等",
+  "estimated_turns": 16,
+  "estimated_minutes": 25,
+  "background": {
+    "role": "某互联网公司产品总监",
+    "situation": "公司AI智能客服系统已试运行3个月，董事会要求做出全面上线决策",
+    "initial_data": {
+      "user_satisfaction_before": "72%",
+      "user_satisfaction_after": "81%",
+      "complaint_handling_time_change": "+15%",
+      "ai_faq_accuracy": "简单问题92%，复杂问题58%",
+      "retrain_budget": "60万元",
+      "retrain_timeline": "2个月",
+      "competitor_status": "竞品已全面上线，用户增长20%"
+    }
+  },
+  "progressive_disclosure": [
+    {
+      "turn": 5,
+      "type": "data_reveal",
+      "content": "补充数据：试运行期间，AI客服处理的工单中，有23%被转接人工客服，转接原因主要是'用户反复追问同一问题'和'涉及退款/投诉升级'。"
+    },
+    {
+      "turn": 8,
+      "type": "data_reveal",
+      "content": "补充信息：客服部门反馈，AI上线后人工客服工作量增加了30%，因为很多问题AI处理不了又转回人工，导致团队士气下降。"
+    },
+    {
+      "turn": 11,
+      "type": "data_reveal",
+      "content": "补充数据：用户满意度调查中，给出差评的用户有60%是45岁以上群体，而18-35岁群体满意度高达89%。"
+    },
+    {
+      "turn": 14,
+      "type": "data_reveal",
+      "content": "补充信息：技术团队最新评估显示，如果选择不全面上线而是继续优化，可能需要额外3个月和40万预算，但复杂场景准确率可从58%提升到75%。"
+    }
+  ],
+  "challenge_scenarios": [
+    "市场部指出竞品全面上线后用户增长20%",
+    "客服部门反馈人工客服工作量增加30%",
+    "有内部报告指出用户满意度差评60%来自老年群体",
+    "资深客服主管认为AI只处理了简单问题，复杂case反而没人管"
+  ],
+  "probe_directions": [
+    "数据解读能力",
+    "多方利益考量",
+    "风险评估",
+    "决策依据的逻辑性",
+    "对新信息的反应和调整",
+    "方案的具体性和可执行性"
+  ]
+}
