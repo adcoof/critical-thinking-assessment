@@ -9,6 +9,7 @@ import random
 import re
 import os
 from pathlib import Path
+import plotly.graph_objects as go
 
 # ══════════════════════════════════════════════════════════════
 # 全部逻辑内联，不引用任何外部模块
@@ -284,6 +285,130 @@ def generate_report(final_scores, evidence_list, total_turns, audit_results):
 
 st.set_page_config(page_title="审辩思维AI测评智能体", page_icon="🧠", layout="wide")
 
+# 自定义CSS样式 - Apple Design System
+st.markdown("""
+<style>
+    /* Apple 配色方案 */
+    :root {
+        --apple-primary: #0066cc;
+        --apple-primary-focus: #0071e3;
+        --apple-primary-on-dark: #2997ff;
+        --apple-ink: #1d1d1f;
+        --apple-ink-muted-80: #333333;
+        --apple-ink-muted-48: #7a7a7a;
+        --apple-canvas: #ffffff;
+        --apple-canvas-parchment: #f5f5f7;
+        --apple-surface-pearl: #fafafc;
+        --apple-hairline: #e0e0e0;
+        --apple-divider-soft: #f0f0f0;
+    }
+
+    .stApp {
+        background-color: var(--apple-canvas-parchment);
+        color: var(--apple-ink);
+    }
+    .stApp > header {
+        background-color: var(--apple-canvas);
+    }
+    [data-testid="stSidebar"] {
+        background-color: var(--apple-surface-pearl);
+        color: var(--apple-ink);
+    }
+    [data-testid="stSidebar"] > div:first-child {
+        background-color: var(--apple-surface-pearl);
+    }
+    /* 主要文本元素 - Apple Near-Black Ink */
+    h1, h2, h3, h4, h5, h6,
+    .stMarkdown,
+    .stMarkdown p,
+    .stMarkdown li,
+    .stMarkdown span,
+    label,
+    .stButton > button,
+    .stSelectbox label,
+    .stTextInput label,
+    .stTextArea label,
+    .stMetric label,
+    .stMetric [data-testid="stMetricValue"],
+    .stMetric [data-testid="stMetricDelta"],
+    .stProgress > div > div > div > div {
+        color: var(--apple-ink) !important;
+    }
+    /* 主要按钮 - Apple Action Blue */
+    .stButton > button[kind="primary"],
+    .stButton > button[data-testid="stBaseButton-primary"] {
+        background-color: var(--apple-primary) !important;
+        color: #ffffff !important;
+        border-radius: 9999px !important;
+    }
+    /* 次要按钮 */
+    .stButton > button[kind="secondary"],
+    .stButton > button[data-testid="stBaseButton-secondary"] {
+        background-color: var(--apple-canvas) !important;
+        color: var(--apple-primary) !important;
+        border: 1px solid var(--apple-primary) !important;
+        border-radius: 9999px !important;
+    }
+    /* 链接颜色 - Apple Action Blue */
+    a {
+        color: var(--apple-primary) !important;
+    }
+    /* 代码块 */
+    code {
+        color: #d63384 !important;
+        background-color: var(--apple-canvas-parchment) !important;
+    }
+    /* 侧边栏特定元素 */
+    [data-testid="stSidebar"] .stMarkdown,
+    [data-testid="stSidebar"] label,
+    [data-testid="stSidebar"] .stSelectbox label {
+        color: var(--apple-ink) !important;
+    }
+    /* 分割线 */
+    hr {
+        border-color: var(--apple-hairline) !important;
+    }
+    /* 输入框样式 */
+    .stTextInput > div > div > input,
+    .stTextArea > div > div > textarea {
+        border-color: var(--apple-hairline) !important;
+        border-radius: 8px !important;
+    }
+    /* 选择框样式 */
+    .stSelectbox > div > div {
+        border-color: var(--apple-hairline) !important;
+        border-radius: 8px !important;
+    }
+    /* 指标卡片 */
+    [data-testid="stMetric"] {
+        background-color: var(--apple-canvas) !important;
+        padding: 16px !important;
+        border-radius: 12px !important;
+        border: 1px solid var(--apple-hairline) !important;
+    }
+    /* 进度条 */
+    .stProgress > div > div > div {
+        background-color: var(--apple-primary) !important;
+    }
+    /* 下载按钮样式 - 固定白色背景黑色字体 */
+    .stDownloadButton > button,
+    .stDownloadButton > button[kind="secondary"],
+    .stDownloadButton > button[data-testid="stBaseButton-secondary"] {
+        background-color: #ffffff !important;
+        color: #1d1d1f !important;
+        border: 1px solid #e0e0e0 !important;
+        border-radius: 8px !important;
+        font-weight: 500 !important;
+    }
+    .stDownloadButton > button:hover,
+    .stDownloadButton > button[kind="secondary"]:hover,
+    .stDownloadButton > button[data-testid="stBaseButton-secondary"]:hover {
+        background-color: #f5f5f7 !important;
+        border-color: #d0d0d0 !important;
+    }
+</style>
+""", unsafe_allow_html=True)
+
 if "phase" not in st.session_state:
     st.session_state.phase = "intro"
     st.session_state.turn_number = 0
@@ -468,9 +593,82 @@ elif st.session_state.phase == "report":
 
     with col2:
         st.markdown("### 📈 能力雷达图")
-        import pandas as pd
-        df = pd.DataFrame({"维度": list(scores.keys()), "得分": list(scores.values())})
-        st.bar_chart(df.set_index("维度"))
+        # 创建雷达图 - Apple Design System 配色
+        categories = list(scores.keys())
+        values = list(scores.values())
+
+        # 闭合雷达图（首尾相连）
+        categories_closed = categories + [categories[0]]
+        values_closed = values + [values[0]]
+
+        # Apple Action Blue (#0066cc) 配色方案
+        apple_blue = '#0066cc'
+        apple_blue_light = 'rgba(0, 102, 204, 0.15)'
+
+        fig = go.Figure()
+        fig.add_trace(go.Scatterpolar(
+            r=values_closed,
+            theta=categories_closed,
+            fill='toself',
+            name='能力得分',
+            line=dict(color=apple_blue, width=2),
+            fillcolor=apple_blue_light,
+            hovertemplate='<b>%{theta}</b><br>得分: %{r}/5<extra></extra>'
+        ))
+
+        fig.update_layout(
+            polar=dict(
+                radialaxis=dict(
+                    visible=True,
+                    range=[0, 5],
+                    tickvals=[1, 2, 3, 4, 5],
+                    ticktext=['1', '2', '3', '4', '5'],
+                    tickfont=dict(size=11, color='#1d1d1f'),
+                    gridcolor='#e0e0e0',
+                    linecolor='#e0e0e0'
+                ),
+                angularaxis=dict(
+                    tickfont=dict(size=12, color='#1d1d1f'),
+                    gridcolor='#e0e0e0',
+                    linecolor='#e0e0e0'
+                ),
+                bgcolor='#ffffff'
+            ),
+            paper_bgcolor='#ffffff',
+            plot_bgcolor='#ffffff',
+            font=dict(family="SF Pro Text, system-ui, -apple-system, sans-serif"),
+            showlegend=False,
+            margin=dict(l=60, r=60, t=40, b=40),
+            height=350
+        )
+
+        st.plotly_chart(fig, use_container_width=True)
+
+        # 导出按钮
+        col_export1, col_export2 = st.columns(2)
+        with col_export1:
+            # 导出为HTML
+            html_str = fig.to_html(include_plotlyjs='cdn', full_html=True)
+            st.download_button(
+                label="📥 导出HTML",
+                data=html_str,
+                file_name="能力雷达图.html",
+                mime="text/html",
+                use_container_width=True
+            )
+        with col_export2:
+            # 导出为PNG（需要安装 kaleido）
+            try:
+                img_bytes = fig.to_image(format="png", width=800, height=600, scale=2)
+                st.download_button(
+                    label="📥 导出PNG",
+                    data=img_bytes,
+                    file_name="能力雷达图.png",
+                    mime="image/png",
+                    use_container_width=True
+                )
+            except Exception as e:
+                st.info("PNG导出需要安装 kaleido：pip install kaleido")
 
     st.divider()
 
